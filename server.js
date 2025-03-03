@@ -13,8 +13,14 @@ const authRoutes = require('./server/routes/auth');
 const pageRoutes = require('./server/routes/pages');
 
 // Import middleware
-const { globalLimiter } = require('./server/middleware/rate-limit');
+const { globalLimiter } = require('./server/middleware/rate-limiter');
 const checkDatabase = require('./server/middleware/database');
+
+// Validate critical environment variables
+if (!process.env.JWT_SECRET) {
+  console.error('ERROR: JWT_SECRET environment variable is required');
+  process.exit(1);
+}
 
 // Initialize app
 const app = express();

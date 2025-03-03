@@ -93,8 +93,12 @@ self.addEventListener('fetch', (event) => {
     // Network-first strategy for API requests
     event.respondWith(
       fetch(event.request)
-        .catch(() => {
-          console.log('Service Worker: Network request failed, returning offline response');
+        .catch((error) => {
+          console.log('Service Worker: Network request failed:', error.message);
+          
+          // Check the request header Accept type
+          const acceptHeader = event.request.headers.get('accept') || '';
+          const wantsJSON = acceptHeader.includes('application/json');
           
           // If it's a questions request, return local fallback
           if (url.pathname === '/api/questions') {
@@ -118,14 +122,26 @@ self.addEventListener('fetch', (event) => {
             );
           }
           
-          // Generic offline message for other API requests
+          // Handle other API requests with appropriate JSON response
+          if (wantsJSON) {
+            return new Response(
+              JSON.stringify({
+                offline: true,
+                error: 'Network request failed',
+                message: 'You are currently offline. Please try again when your connection is restored.'
+              }),
+              {
+                headers: { 'Content-Type': 'application/json' },
+                status: 503
+              }
+            );
+          }
+          
+          // Default generic response for non-JSON API requests
           return new Response(
-            JSON.stringify({
-              offline: true,
-              message: 'You are currently offline. Please try again when your connection is restored.'
-            }),
+            'You are currently offline. Please try again when your connection is restored.',
             {
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 'Content-Type': 'text/plain' },
               status: 503
             }
           );
@@ -154,8 +170,10 @@ self.addEventListener('fetch', (event) => {
           });
           
           return response;
-        }).catch(() => {
-          // If network fails and we don't have a cache match, return the offline page
+        }).catch((error) => {
+          console.log('Network request failed for static asset:', error.message);
+          
+          // If network fails and we don't have a cache match, return the appropriate fallback
           if (event.request.mode === 'navigate') {
             return caches.match('/');
           }
@@ -163,6 +181,15 @@ self.addEventListener('fetch', (event) => {
           // For image requests, return a placeholder
           if (event.request.destination === 'image') {
             return caches.match('/images/ui/placeholder.png');
+          }
+          
+          // For CSS or JavaScript
+          if (event.request.destination === 'style') {
+            return new Response('/* Offline stylesheet */');
+          }
+          
+          if (event.request.destination === 'script') {
+            return new Response('console.log("Offline script");');
           }
           
           // Default fallback
