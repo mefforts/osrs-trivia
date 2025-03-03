@@ -1,0 +1,48 @@
+/* public/css/fonts.css */
+
+/* OSRS RuneScape Font Integration */
+@font-face {
+    font-family: 'Runescape';
+    src: url('../fonts/runescape.woff2') format('woff2'),
+         url('../fonts/runescape.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Runescape Bold';
+    src: url('../fonts/runescape_bold.woff2') format('woff2'),
+         url('../fonts/runescape_bold.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Use the fonts in your app */
+:root {
+    --main-font: 'Runescape', 'Arial', sans-serif;
+    --header-font: 'Runescape Bold', 'Arial', sans-serif;
+}
+
+body {
+    font-family: var(--main-font);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--header-font);
+}
+
+/* Fallback font loading detection */
+.fonts-loaded body {
+    font-family: var(--main-font);
+}
+
+.fonts-loaded h1,
+.fonts-loaded h2,
+.fonts-loaded h3,
+.fonts-loaded h4,
+.fonts-loaded h5,
+.fonts-loaded h6 {
+    font-family: var(--header-font);
+}
